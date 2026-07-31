@@ -7,6 +7,7 @@ import InsightsPanel from '@/components/InsightsPanel';
 import PlantationSuggestions from '@/components/PlantationSuggestions';
 import DownloadReport from '@/components/DownloadReport';
 import StateDetail from '@/components/StateDetail';
+import PlantationModule from '@/components/plantation/PlantationModule';
 import { Trees } from 'lucide-react';
 
 export default function Index() {
@@ -65,6 +66,9 @@ export default function Index() {
 
         {/* Plantation suggestions */}
         <PlantationSuggestions selectedState={selectedState} />
+
+        {/* Population-based tree requirement & plantation priority */}
+        <PlantationModule />
 
         {/* Footer */}
         <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
