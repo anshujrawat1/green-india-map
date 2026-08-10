@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { stateCoordinates } from '@/data/indiaGeoJson';
-import { PlantationResult, getDeficitColor, fmt, fmtFull, PRIORITY_META, PRIORITY_ORDER } from '@/lib/plantation';
+import { PlantationResult, getDeficitColor, fmt, PRIORITY_META, PRIORITY_ORDER } from '@/lib/plantation';
 
 interface Props {
   results: PlantationResult[];

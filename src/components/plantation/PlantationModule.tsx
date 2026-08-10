@@ -275,7 +275,7 @@ export default function PlantationModule() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground border-b border-border">
-                {['#', 'Region', 'Population', 'Existing', 'Required', 'Deficit', 'Priority'].map(h => (
+                {['#', 'Region', 'Population', 'Existing', 'Required', 'Deficit', 'Deficit %', 'Achievement %', 'Priority'].map(h => (
                   <th key={h} className="py-2 pr-4 font-medium whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -292,6 +292,8 @@ export default function PlantationModule() {
                   <td className="py-2 pr-4 text-muted-foreground">{fmt(r.existingTrees)}</td>
                   <td className="py-2 pr-4 text-muted-foreground">{fmt(r.requiredTrees)}</td>
                   <td className="py-2 pr-4 font-semibold" style={{ color: getDeficitColor(r.deficitPercent) }}>{fmt(r.treeDeficit)}</td>
+                  <td className="py-2 pr-4 text-muted-foreground">{r.deficitPercent.toFixed(2)}%</td>
+                  <td className="py-2 pr-4 text-muted-foreground">{r.achievementPercent.toFixed(2)}%</td>
                   <td className="py-2 pr-4 whitespace-nowrap">
                     <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
                       style={{ backgroundColor: `${PRIORITY_META[r.priority].color}22`, color: PRIORITY_META[r.priority].color }}>
