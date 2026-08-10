@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, TreePine, Target, TrendingDown, Download, Info, Sparkles } from 'lucide-react';
 import {
-  computeAll, PlantationResult, PRIORITY_META, RATIO_OPTIONS, DEFAULT_RATIO,
+  computeAll, PlantationResult, PRIORITY_META, BENCHMARK,
   fmt, fmtFull, generateInsights, getDeficitColor,
 } from '@/lib/plantation';
 import { POPULATION_SOURCE, POPULATION_UPDATED } from '@/data/populationData';
 import DeficitMap from './DeficitMap';
 import {
-  DeficitBarChart, PopulationScatterChart, ExistingVsRequiredChart, PriorityPieChart, ProjectionChart,
+  DeficitBarChart, PopulationScatterChart, ExistingVsRequiredChart, PriorityPieChart, ScenarioSimulation,
 } from './PlantationCharts';
 
 const fade = {
@@ -54,7 +54,7 @@ function ComparisonBars({ result }: { result: PlantationResult }) {
   const rows = [
     { label: 'Existing Trees', value: result.existingTrees, color: '#059669' },
     { label: 'Required Trees', value: result.requiredTrees, color: '#f59e0b' },
-    { label: 'Tree Deficit', value: result.treeDeficit, color: '#ef4444' },
+    { label: result.treeDeficit > 0 ? 'Tree Deficit' : 'Surplus', value: result.treeDeficit > 0 ? result.treeDeficit : result.surplus, color: result.treeDeficit > 0 ? '#ef4444' : '#065f46' },
   ];
   return (
     <div className="glass-card rounded-xl p-5 space-y-4">
@@ -76,9 +76,7 @@ function ComparisonBars({ result }: { result: PlantationResult }) {
         </div>
       ))}
       <p className="text-xs text-muted-foreground">
-        {result.estimated
-          ? `Existing trees estimated from forest area (400 trees/hectare).`
-          : `Existing tree count from ISFR reported estimates.`}
+        Required Trees = Population × {BENCHMARK}. Existing tree counts from ISFR reported estimates.
       </p>
     </div>
   );
@@ -102,9 +100,10 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 }
 
 export default function PlantationModule() {
-  const [ratio, setRatio] = useState<number>(DEFAULT_RATIO);
+  const ratio = BENCHMARK;
   const [selected, setSelected] = useState<string>('Delhi');
   const [years, setYears] = useState(10);
+  const [annualPlanted, setAnnualPlanted] = useState(5_000_000);
 
   const results = useMemo(() => computeAll(ratio), [ratio]);
   const current = useMemo(
@@ -117,17 +116,20 @@ export default function PlantationModule() {
     population: results.reduce((s, r) => s + r.population, 0),
     existing: results.reduce((s, r) => s + r.existingTrees, 0),
     required: results.reduce((s, r) => s + r.requiredTrees, 0),
-    deficit: results.reduce((s, r) => s + r.treeDeficit, 0),
+    stateDeficit: results.reduce((s, r) => s + r.treeDeficit, 0),
     critical: results.filter(r => r.priority === 'Critical').length,
   }), [results]);
+  const nationalNet = totals.existing - totals.required;
+  const targetMet = nationalNet >= 0;
 
   const ranking = useMemo(() => [...results].sort((a, b) => b.treeDeficit - a.treeDeficit), [results]);
 
   const exportCsv = () => {
-    const header = ['Region', 'Level', 'Population', 'Existing Trees', 'Required Trees', 'Tree Deficit', 'Deficit %', 'Priority'];
+    const header = ['Region', 'Level', 'Population', 'Existing Trees', 'Required Trees', 'Tree Deficit', 'Surplus', 'Trees per Person', 'Achievement %', 'Deficit %', 'Priority'];
     const rows = ranking.map(r => [
       r.region, r.level, Math.round(r.population), Math.round(r.existingTrees), Math.round(r.requiredTrees),
-      Math.round(r.treeDeficit), r.deficitPercent.toFixed(1), r.priority,
+      Math.round(r.treeDeficit), Math.round(r.surplus), r.treesPerPerson.toFixed(2),
+      r.achievementPercent.toFixed(2), r.deficitPercent.toFixed(2), r.priority,
     ].join(','));
     const csv = [`Benchmark: ${ratio} trees per person`, header.join(','), ...rows].join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -162,16 +164,13 @@ export default function PlantationModule() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">Tree-per-person benchmark</label>
-            <div className="flex flex-wrap gap-2">
-              {RATIO_OPTIONS.map(r => (
-                <button key={r} onClick={() => setRatio(r)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    ratio === r ? 'bg-primary text-primary-foreground shadow-md scale-105' : 'bg-muted text-muted-foreground hover:bg-accent'}`}>
-                  {r} tree{r > 1 ? 's' : ''}/person
-                </button>
-              ))}
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Project benchmark</label>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-md">
+              <Target className="h-4 w-4" /> {BENCHMARK} Trees / Person
             </div>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Fixed benchmark. Required Trees = Population × {BENCHMARK} — forest cover and tree density are not used here.
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">Region (state level)</label>
@@ -190,10 +189,22 @@ export default function PlantationModule() {
 
       {/* National totals */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Total Population" value={fmt(totals.population)} sub="All mapped states" color="#3b82f6" />
-        <StatCard icon={TreePine} label="Existing Trees" value={fmt(totals.existing)} sub="Reported + estimated" color="#059669" />
-        <StatCard icon={Target} label="Required Trees" value={fmt(totals.required)} sub={`At ${ratio} trees/person`} color="#f59e0b" />
-        <StatCard icon={TrendingDown} label="National Deficit" value={fmt(totals.deficit)} sub={`${totals.critical} states critical`} color="#ef4444" />
+        <StatCard icon={Users} label="Total Population" value={fmt(totals.population)} sub="Sum of all mapped states" color="#3b82f6" />
+        <StatCard icon={TreePine} label="National Existing Trees" value={fmt(totals.existing)} sub="Sum of state tree counts" color="#059669" />
+        <StatCard icon={Target} label="National Required Trees" value={fmt(totals.required)} sub={`Population × ${BENCHMARK}`} color="#f59e0b" />
+        <StatCard
+          icon={TrendingDown}
+          label={targetMet ? 'National Target Met' : 'National Deficit'}
+          value={`${targetMet ? '+' : '−'}${fmt(Math.abs(nationalNet))}`}
+          sub={targetMet ? 'Existing exceeds required nationally' : 'Existing below required nationally'}
+          color={targetMet ? '#059669' : '#ef4444'}
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatCard icon={TrendingDown} label="Total State-Level Tree Deficit"
+          value={fmt(totals.stateDeficit)} sub="Sum of per-state positive deficits only" color="#ef4444" />
+        <StatCard icon={Sparkles} label="Critical Priority States"
+          value={`${totals.critical}`} sub="Deficit above 75% of requirement" color="#f97316" />
       </div>
 
       {/* Selected region detail */}
@@ -204,11 +215,16 @@ export default function PlantationModule() {
             <h4 className="font-display font-bold text-foreground">{current.region}</h4>
             {[
               { l: 'Population', v: fmtFull(current.population) },
-              { l: 'Existing Trees', v: fmtFull(current.existingTrees) },
-              { l: `Required (${ratio}/person)`, v: fmtFull(current.requiredTrees) },
-              { l: 'Tree Deficit', v: fmtFull(current.treeDeficit) },
-              { l: 'Trees per Person', v: (current.existingTrees / current.population).toFixed(2) },
-              { l: 'Forest Cover', v: `${current.forestPercent}%` },
+              { l: 'Existing Trees', v: fmt(current.existingTrees) },
+              { l: `Required (${BENCHMARK}/person)`, v: fmt(current.requiredTrees) },
+              current.treeDeficit > 0
+                ? { l: 'Tree Deficit', v: fmt(current.treeDeficit) }
+                : { l: 'Surplus', v: fmt(current.surplus) },
+              { l: 'Trees per Person', v: current.treesPerPerson.toFixed(2) },
+              { l: 'Target Achievement', v: `${current.achievementPercent.toFixed(2)}%` },
+              { l: 'Deficit', v: `${current.deficitPercent.toFixed(2)}%` },
+              { l: 'Priority', v: `${PRIORITY_META[current.priority].emoji} ${current.priority}` },
+              { l: 'Forest Cover (separate metric)', v: `${current.forestPercent}%` },
             ].map(row => (
               <div key={row.l} className="flex justify-between text-sm border-b border-border/60 pb-1.5 last:border-0">
                 <span className="text-muted-foreground">{row.l}</span>
@@ -221,9 +237,9 @@ export default function PlantationModule() {
         </motion.div>
       </AnimatePresence>
 
-      {/* AI insight panel */}
+      {/* Automated insights */}
       <motion.div {...fade} className="glass-card rounded-xl p-5">
-        <h4 className="font-display font-bold text-foreground mb-3">🧠 AI Insight Panel</h4>
+        <h4 className="font-display font-bold text-foreground mb-3">🧠 Automated Insights</h4>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {insights.map((i, idx) => (
             <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
@@ -249,7 +265,8 @@ export default function PlantationModule() {
         <PriorityPieChart results={results} />
       </div>
 
-      <ProjectionChart result={current} years={years} onYearsChange={setYears} />
+      <ScenarioSimulation result={current} years={years} onYearsChange={setYears}
+        annualPlanted={annualPlanted} onAnnualChange={setAnnualPlanted} />
 
       {/* Ranking table */}
       <motion.div {...fade} className="glass-card rounded-xl p-5">
@@ -258,7 +275,7 @@ export default function PlantationModule() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground border-b border-border">
-                {['#', 'Region', 'Population', 'Existing', 'Required', 'Deficit', 'Priority'].map(h => (
+                {['#', 'Region', 'Population', 'Existing', 'Required', 'Deficit', 'Deficit %', 'Achievement %', 'Priority'].map(h => (
                   <th key={h} className="py-2 pr-4 font-medium whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -275,6 +292,8 @@ export default function PlantationModule() {
                   <td className="py-2 pr-4 text-muted-foreground">{fmt(r.existingTrees)}</td>
                   <td className="py-2 pr-4 text-muted-foreground">{fmt(r.requiredTrees)}</td>
                   <td className="py-2 pr-4 font-semibold" style={{ color: getDeficitColor(r.deficitPercent) }}>{fmt(r.treeDeficit)}</td>
+                  <td className="py-2 pr-4 text-muted-foreground">{r.deficitPercent.toFixed(2)}%</td>
+                  <td className="py-2 pr-4 text-muted-foreground">{r.achievementPercent.toFixed(2)}%</td>
                   <td className="py-2 pr-4 whitespace-nowrap">
                     <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
                       style={{ backgroundColor: `${PRIORITY_META[r.priority].color}22`, color: PRIORITY_META[r.priority].color }}>
