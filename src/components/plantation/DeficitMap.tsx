@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { stateCoordinates } from '@/data/indiaGeoJson';
-import { PlantationResult, getDeficitColor, fmt, fmtFull } from '@/lib/plantation';
+import { PlantationResult, getDeficitColor, fmt, fmtFull, PRIORITY_META, PRIORITY_ORDER } from '@/lib/plantation';
 
 interface Props {
   results: PlantationResult[];
@@ -50,11 +50,13 @@ export default function DeficitMap({ results, selected, onSelect }: Props) {
       marker.bindTooltip(
         `<div style="font-size:12px;line-height:1.5">
           <strong>${r.region}</strong><br/>
-          Population: ${fmtFull(r.population)}<br/>
+          Population: ${fmt(r.population)}<br/>
           Existing Trees: ${fmt(r.existingTrees)}<br/>
           Required Trees: ${fmt(r.requiredTrees)}<br/>
-          Tree Deficit: ${fmt(r.treeDeficit)}<br/>
-          Priority: ${r.priority} (${r.deficitPercent.toFixed(0)}%)
+          ${r.treeDeficit > 0 ? `Tree Deficit: ${fmt(r.treeDeficit)}` : `Surplus: ${fmt(r.surplus)}`}<br/>
+          Trees per Person: ${r.treesPerPerson.toFixed(2)}<br/>
+          Deficit: ${r.deficitPercent.toFixed(2)}%<br/>
+          Priority: ${r.priority}
         </div>`,
         { direction: 'top', sticky: true }
       );
@@ -74,15 +76,10 @@ export default function DeficitMap({ results, selected, onSelect }: Props) {
     <div className="space-y-2">
       <div ref={containerRef} className="w-full h-[420px] rounded-lg z-0" />
       <div className="flex flex-wrap gap-3 text-xs">
-        {[
-          { c: '#065f46', l: 'Very Low Deficit' },
-          { c: '#84cc16', l: 'Moderate' },
-          { c: '#fbbf24', l: 'Medium' },
-          { c: '#f97316', l: 'High' },
-          { c: '#ef4444', l: 'Critical Deficit' },
-        ].map(({ c, l }) => (
-          <span key={l} className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c }} />{l}
+        {PRIORITY_ORDER.map(p => (
+          <span key={p} className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: PRIORITY_META[p].color }} />
+            {p === 'Target Met' ? 'Target Met' : `${p} (${PRIORITY_META[p].range})`}
           </span>
         ))}
       </div>
