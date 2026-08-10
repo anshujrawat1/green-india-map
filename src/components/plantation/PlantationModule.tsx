@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, TreePine, Target, TrendingDown, Download, Info, Sparkles } from 'lucide-react';
 import {
-  computeAll, PlantationResult, PRIORITY_META, RATIO_OPTIONS, DEFAULT_RATIO,
+  computeAll, PlantationResult, PRIORITY_META, BENCHMARK,
   fmt, fmtFull, generateInsights, getDeficitColor,
 } from '@/lib/plantation';
 import { POPULATION_SOURCE, POPULATION_UPDATED } from '@/data/populationData';
 import DeficitMap from './DeficitMap';
 import {
-  DeficitBarChart, PopulationScatterChart, ExistingVsRequiredChart, PriorityPieChart, ProjectionChart,
+  DeficitBarChart, PopulationScatterChart, ExistingVsRequiredChart, PriorityPieChart, ScenarioSimulation,
 } from './PlantationCharts';
 
 const fade = {
@@ -54,7 +54,7 @@ function ComparisonBars({ result }: { result: PlantationResult }) {
   const rows = [
     { label: 'Existing Trees', value: result.existingTrees, color: '#059669' },
     { label: 'Required Trees', value: result.requiredTrees, color: '#f59e0b' },
-    { label: 'Tree Deficit', value: result.treeDeficit, color: '#ef4444' },
+    { label: result.treeDeficit > 0 ? 'Tree Deficit' : 'Surplus', value: result.treeDeficit > 0 ? result.treeDeficit : result.surplus, color: result.treeDeficit > 0 ? '#ef4444' : '#065f46' },
   ];
   return (
     <div className="glass-card rounded-xl p-5 space-y-4">
@@ -76,9 +76,7 @@ function ComparisonBars({ result }: { result: PlantationResult }) {
         </div>
       ))}
       <p className="text-xs text-muted-foreground">
-        {result.estimated
-          ? `Existing trees estimated from forest area (400 trees/hectare).`
-          : `Existing tree count from ISFR reported estimates.`}
+        Required Trees = Population × {BENCHMARK}. Existing tree counts from ISFR reported estimates.
       </p>
     </div>
   );
