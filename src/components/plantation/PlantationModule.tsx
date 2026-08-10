@@ -100,9 +100,10 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 }
 
 export default function PlantationModule() {
-  const [ratio, setRatio] = useState<number>(DEFAULT_RATIO);
+  const ratio = BENCHMARK;
   const [selected, setSelected] = useState<string>('Delhi');
   const [years, setYears] = useState(10);
+  const [annualPlanted, setAnnualPlanted] = useState(5_000_000);
 
   const results = useMemo(() => computeAll(ratio), [ratio]);
   const current = useMemo(
@@ -115,17 +116,20 @@ export default function PlantationModule() {
     population: results.reduce((s, r) => s + r.population, 0),
     existing: results.reduce((s, r) => s + r.existingTrees, 0),
     required: results.reduce((s, r) => s + r.requiredTrees, 0),
-    deficit: results.reduce((s, r) => s + r.treeDeficit, 0),
+    stateDeficit: results.reduce((s, r) => s + r.treeDeficit, 0),
     critical: results.filter(r => r.priority === 'Critical').length,
   }), [results]);
+  const nationalNet = totals.existing - totals.required;
+  const targetMet = nationalNet >= 0;
 
   const ranking = useMemo(() => [...results].sort((a, b) => b.treeDeficit - a.treeDeficit), [results]);
 
   const exportCsv = () => {
-    const header = ['Region', 'Level', 'Population', 'Existing Trees', 'Required Trees', 'Tree Deficit', 'Deficit %', 'Priority'];
+    const header = ['Region', 'Level', 'Population', 'Existing Trees', 'Required Trees', 'Tree Deficit', 'Surplus', 'Trees per Person', 'Achievement %', 'Deficit %', 'Priority'];
     const rows = ranking.map(r => [
       r.region, r.level, Math.round(r.population), Math.round(r.existingTrees), Math.round(r.requiredTrees),
-      Math.round(r.treeDeficit), r.deficitPercent.toFixed(1), r.priority,
+      Math.round(r.treeDeficit), Math.round(r.surplus), r.treesPerPerson.toFixed(2),
+      r.achievementPercent.toFixed(2), r.deficitPercent.toFixed(2), r.priority,
     ].join(','));
     const csv = [`Benchmark: ${ratio} trees per person`, header.join(','), ...rows].join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
