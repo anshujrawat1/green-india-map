@@ -46,8 +46,6 @@ export default function Index() {
               onStateChange={setSelectedState}
               densityRange={densityRange}
               onDensityChange={setDensityRange}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
             />
             <InsightsPanel />
           </div>
