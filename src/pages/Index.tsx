@@ -13,7 +13,6 @@ import { Trees } from 'lucide-react';
 export default function Index() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [densityRange, setDensityRange] = useState<[number, number]>([0, 45000]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className="min-h-screen bg-background">
