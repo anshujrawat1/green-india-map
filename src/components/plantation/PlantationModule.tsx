@@ -143,7 +143,7 @@ export default function PlantationModule() {
   if (!current) return null;
 
   return (
-    <section id="population-module" className="space-y-6">
+    <section id="population-module" className="space-y-6 scroll-mt-24">
       {/* Header + controls */}
       <motion.div {...fade} className="glass-card rounded-xl p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
