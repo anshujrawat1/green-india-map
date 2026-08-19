@@ -5,16 +5,12 @@ interface FiltersProps {
   onStateChange: (state: string | null) => void;
   densityRange: [number, number];
   onDensityChange: (range: [number, number]) => void;
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
 }
 
 const MAX_DENSITY = 45000;
 
-export default function Filters({ selectedState, onStateChange, densityRange, onDensityChange, searchQuery, onSearchChange }: FiltersProps) {
-  const filteredStates = stateTreeData
-    .filter(s => s.state.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => a.state.localeCompare(b.state));
+export default function Filters({ selectedState, onStateChange, densityRange, onDensityChange }: FiltersProps) {
+  const filteredStates = [...stateTreeData].sort((a, b) => a.state.localeCompare(b.state));
 
   return (
     <div className="glass-card rounded-lg p-5 space-y-4">
