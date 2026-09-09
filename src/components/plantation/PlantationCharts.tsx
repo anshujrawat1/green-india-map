@@ -38,7 +38,7 @@ export function DeficitBarChart({ results }: { results: PlantationResult[] }) {
       <h4 className="font-display font-bold text-foreground mb-4">🌳 Top 10 Tree Deficit States</h4>
       <p className="text-xs text-muted-foreground mb-3">Deficit = max(Population × {BENCHMARK} − Existing Trees, 0)</p>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ left: 18, right: 12 }}>
+        <BarChart data={data} layout="vertical" margin={{ left: 18, right: 24 }} barCategoryGap="25%">
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis type="number" tick={axis} tickFormatter={fmt} />
           <YAxis type="category" dataKey="name" tick={axis} width={90} interval={0} />
@@ -55,7 +55,7 @@ export function DeficitBarChart({ results }: { results: PlantationResult[] }) {
               ]} />;
             }}
           />
-          <Bar dataKey="deficit" radius={[6, 6, 0, 0]}>
+          <Bar dataKey="deficit" radius={[0, 6, 6, 0]} maxBarSize={34}>
             {data.map((d, i) => <Cell key={i} fill={getDeficitColor(d.pct)} />)}
           </Bar>
         </BarChart>
