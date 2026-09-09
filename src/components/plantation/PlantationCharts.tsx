@@ -115,8 +115,8 @@ export function ExistingVsRequiredChart({ results }: { results: PlantationResult
     <div className="glass-card rounded-xl p-5">
       <h4 className="font-display font-bold text-foreground mb-4">🌲 Existing vs Required Trees</h4>
       <p className="text-xs text-muted-foreground mb-3">Both series are absolute tree counts on the same scale.</p>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ bottom: 55 }}>
+      <ResponsiveContainer width="100%" height={330}>
+        <BarChart data={data} margin={{ top: 8, bottom: 62, left: 6, right: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="name" angle={-45} textAnchor="end" tick={axis} interval={0} />
           <YAxis tick={axis} tickFormatter={fmt} />
@@ -132,9 +132,9 @@ export function ExistingVsRequiredChart({ results }: { results: PlantationResult
               ]} />;
             }}
           />
-          <Legend />
-          <Bar dataKey="existing" name="Existing" fill="#059669" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="required" name="Required" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+          <Legend verticalAlign="top" align="right" height={28} wrapperStyle={{ fontSize: 12 }} />
+          <Bar dataKey="existing" name="Existing" fill="#059669" radius={[4, 4, 0, 0]} maxBarSize={26} />
+          <Bar dataKey="required" name="Required" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={26} />
         </BarChart>
       </ResponsiveContainer>
     </div>
