@@ -8,7 +8,7 @@ import {
 import { POPULATION_SOURCE, POPULATION_UPDATED } from '@/data/populationData';
 import DeficitMap from './DeficitMap';
 import {
-  DeficitBarChart, PopulationScatterChart, ExistingVsRequiredChart, PriorityPieChart, ScenarioSimulation,
+  DeficitBarChart, TreesPerPersonChart, ExistingVsRequiredChart, PriorityPieChart, ScenarioSimulation,
 } from './PlantationCharts';
 
 const fade = {
@@ -260,7 +260,7 @@ export default function PlantationModule() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DeficitBarChart results={results} />
-        <PopulationScatterChart results={results} />
+        <TreesPerPersonChart results={results} />
         <ExistingVsRequiredChart results={results} />
         <PriorityPieChart results={results} />
       </div>

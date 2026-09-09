@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell,
-  ScatterChart, Scatter, ZAxis, PieChart, Pie, AreaChart, Area, Line, ComposedChart,
+  PieChart, Pie, AreaChart, Area, ReferenceLine,
 } from 'recharts';
 import {
   PlantationResult, simulateScenario, fmt, fmtFull, getDeficitColor, PRIORITY_META,
@@ -64,41 +64,48 @@ export function DeficitBarChart({ results }: { results: PlantationResult[] }) {
   );
 }
 
-/** 2. Population vs required trees — strict 3:1 relationship */
-export function PopulationScatterChart({ results }: { results: PlantationResult[] }) {
-  const data = results.map(r => ({
-    x: r.population, y: r.requiredTrees, z: 120, name: r.region, pct: r.deficitPercent,
-  })).sort((a, b) => a.x - b.x);
+/** 2. Trees per person vs the 3:1 benchmark — horizontal bars for all states */
+export function TreesPerPersonChart({ results }: { results: PlantationResult[] }) {
+  const data = useMemo(
+    () => [...results].sort((a, b) => b.treesPerPerson - a.treesPerPerson).map(r => ({
+      name: short(r.region), full: r.region,
+      tpp: Number(r.treesPerPerson.toFixed(2)),
+      pct: r.deficitPercent,
+      existing: r.existingTrees, population: r.population,
+    })),
+    [results]
+  );
   return (
     <div className="glass-card rounded-xl p-5">
-      <h4 className="font-display font-bold text-foreground mb-4">📈 Population vs Required Trees</h4>
+      <h4 className="font-display font-bold text-foreground mb-4">👥 Trees per Person vs Benchmark</h4>
       <p className="text-xs text-muted-foreground mb-3">
-        Required Trees = Population × {BENCHMARK}. The line shows the exact {BENCHMARK}:1 benchmark relationship.
+        Existing trees ÷ population for every state. The dashed line marks the {BENCHMARK} trees/person benchmark.
       </p>
-      <ResponsiveContainer width="100%" height={300}>
-        <ComposedChart data={data} margin={{ bottom: 20, left: 10 }}>
+      <ResponsiveContainer width="100%" height={Math.max(300, data.length * 22)}>
+        <BarChart data={data} layout="vertical" margin={{ left: 18, right: 40 }} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis type="number" dataKey="x" name="Population" tick={axis} tickFormatter={fmt} />
-          <YAxis type="number" dataKey="y" name="Required Trees" tick={axis} tickFormatter={fmt} />
-          <ZAxis type="number" dataKey="z" range={[40, 160]} />
+          <XAxis type="number" tick={axis} domain={[0, BENCHMARK]} ticks={[0, 1, 2, 3]} />
+          <YAxis type="category" dataKey="name" tick={axis} width={90} interval={0} />
           <Tooltip
-            cursor={{ strokeDasharray: '3 3' }}
+            cursor={{ fill: 'hsl(var(--accent))', fillOpacity: 0.3 }}
             content={({ payload }) => {
               const d = payload?.[0]?.payload;
               if (!d) return null;
-              return <TipBox title={d.name} rows={[
-                ['Population', fmtFull(d.x)],
-                ['Required Trees', fmtFull(d.y)],
+              return <TipBox title={d.full} rows={[
+                ['Trees per Person', d.tpp.toFixed(2)],
                 ['Benchmark', `${BENCHMARK} trees/person`],
+                ['Existing Trees', fmt(d.existing)],
+                ['Population', fmtFull(d.population)],
+                ['Deficit %', `${d.pct.toFixed(2)}%`],
               ]} />;
             }}
           />
-          <Line type="linear" dataKey="y" name={`Required = Population × ${BENCHMARK}`} stroke="#f59e0b"
-            strokeDasharray="5 5" dot={false} activeDot={false} strokeWidth={1.5} />
-          <Scatter dataKey="y" name="States">
-            {data.map((d, i) => <Cell key={i} fill={getDeficitColor(d.pct)} fillOpacity={0.8} />)}
-          </Scatter>
-        </ComposedChart>
+          <ReferenceLine x={BENCHMARK} stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={1.5}
+            label={{ value: `Benchmark ${BENCHMARK}/person`, position: 'top', fontSize: 11, fill: '#f59e0b' }} />
+          <Bar dataKey="tpp" name="Trees per Person" radius={[0, 4, 4, 0]} maxBarSize={14}>
+            {data.map((d, i) => <Cell key={i} fill={getDeficitColor(d.pct)} />)}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
