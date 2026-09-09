@@ -38,7 +38,7 @@ export function DeficitBarChart({ results }: { results: PlantationResult[] }) {
       <h4 className="font-display font-bold text-foreground mb-4">🌳 Top 10 Tree Deficit States</h4>
       <p className="text-xs text-muted-foreground mb-3">Deficit = max(Population × {BENCHMARK} − Existing Trees, 0)</p>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ left: 18, right: 12 }}>
+        <BarChart data={data} layout="vertical" margin={{ left: 18, right: 24 }} barCategoryGap="25%">
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis type="number" tick={axis} tickFormatter={fmt} />
           <YAxis type="category" dataKey="name" tick={axis} width={90} interval={0} />
@@ -55,7 +55,7 @@ export function DeficitBarChart({ results }: { results: PlantationResult[] }) {
               ]} />;
             }}
           />
-          <Bar dataKey="deficit" radius={[6, 6, 0, 0]}>
+          <Bar dataKey="deficit" radius={[0, 6, 6, 0]} maxBarSize={34}>
             {data.map((d, i) => <Cell key={i} fill={getDeficitColor(d.pct)} />)}
           </Bar>
         </BarChart>
@@ -80,7 +80,7 @@ export function PopulationScatterChart({ results }: { results: PlantationResult[
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis type="number" dataKey="x" name="Population" tick={axis} tickFormatter={fmt} />
           <YAxis type="number" dataKey="y" name="Required Trees" tick={axis} tickFormatter={fmt} />
-          <ZAxis type="number" dataKey="z" range={[40, 400]} />
+          <ZAxis type="number" dataKey="z" range={[40, 160]} />
           <Tooltip
             cursor={{ strokeDasharray: '3 3' }}
             content={({ payload }) => {
@@ -115,8 +115,8 @@ export function ExistingVsRequiredChart({ results }: { results: PlantationResult
     <div className="glass-card rounded-xl p-5">
       <h4 className="font-display font-bold text-foreground mb-4">🌲 Existing vs Required Trees</h4>
       <p className="text-xs text-muted-foreground mb-3">Both series are absolute tree counts on the same scale.</p>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ bottom: 55 }}>
+      <ResponsiveContainer width="100%" height={330}>
+        <BarChart data={data} margin={{ top: 8, bottom: 62, left: 6, right: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="name" angle={-45} textAnchor="end" tick={axis} interval={0} />
           <YAxis tick={axis} tickFormatter={fmt} />
@@ -132,9 +132,9 @@ export function ExistingVsRequiredChart({ results }: { results: PlantationResult
               ]} />;
             }}
           />
-          <Legend />
-          <Bar dataKey="existing" name="Existing" fill="#059669" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="required" name="Required" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+          <Legend verticalAlign="top" align="right" height={28} wrapperStyle={{ fontSize: 12 }} />
+          <Bar dataKey="existing" name="Existing" fill="#059669" radius={[4, 4, 0, 0]} maxBarSize={26} />
+          <Bar dataKey="required" name="Required" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={26} />
         </BarChart>
       </ResponsiveContainer>
     </div>
