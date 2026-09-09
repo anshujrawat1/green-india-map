@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell,
-  ScatterChart, Scatter, ZAxis, PieChart, Pie, AreaChart, Area, Line, ComposedChart,
+  PieChart, Pie, AreaChart, Area, ReferenceLine,
 } from 'recharts';
 import {
   PlantationResult, simulateScenario, fmt, fmtFull, getDeficitColor, PRIORITY_META,
