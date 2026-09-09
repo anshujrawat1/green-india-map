@@ -80,7 +80,7 @@ export function PopulationScatterChart({ results }: { results: PlantationResult[
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis type="number" dataKey="x" name="Population" tick={axis} tickFormatter={fmt} />
           <YAxis type="number" dataKey="y" name="Required Trees" tick={axis} tickFormatter={fmt} />
-          <ZAxis type="number" dataKey="z" range={[40, 400]} />
+          <ZAxis type="number" dataKey="z" range={[40, 160]} />
           <Tooltip
             cursor={{ strokeDasharray: '3 3' }}
             content={({ payload }) => {
