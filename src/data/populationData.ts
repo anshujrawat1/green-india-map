@@ -16,21 +16,42 @@ export interface PopulationRecord {
   lastUpdated: string;
 }
 
-export const POPULATION_SOURCE = 'Census of India 2011 · UIDAI projections (2025 est.)';
-export const POPULATION_UPDATED = 'Jan 2025';
+export const POPULATION_SOURCE = 'Census of India 2011 (Telangana/Ladakh disaggregated)';
+export const POPULATION_UPDATED = 'Sep 2026';
 
 const raw: Record<string, number> = {
-  "Uttar Pradesh": 241000000, "Bihar": 128500000, "Maharashtra": 126400000,
-  "West Bengal": 101200000, "Madhya Pradesh": 87300000, "Rajasthan": 81800000,
-  "Tamil Nadu": 77000000, "Karnataka": 68600000, "Gujarat": 71500000,
-  "Andhra Pradesh": 53900000, "Odisha": 46800000, "Telangana": 38200000,
-  "Kerala": 35700000, "Jharkhand": 40100000, "Assam": 35900000,
-  "Punjab": 31000000, "Chhattisgarh": 30500000, "Haryana": 30300000,
-  "Delhi": 21500000, "Jammu & Kashmir": 13800000, "Uttarakhand": 11800000,
-  "Himachal Pradesh": 7500000, "Tripura": 4200000, "Meghalaya": 3400000,
-  "Manipur": 3300000, "Nagaland": 2300000, "Goa": 1600000,
-  "Arunachal Pradesh": 1700000, "Mizoram": 1300000, "Sikkim": 700000,
-  "Chandigarh": 1200000, "Ladakh": 300000,
+  "Delhi": 16787941,
+  "Bihar": 104099452,
+  "Chandigarh": 1055450,
+  "Madhya Pradesh": 72626809,
+  "Arunachal Pradesh": 1383727,
+  "Chhattisgarh": 25545198,
+  "Maharashtra": 112374333,
+  "Odisha": 41974218,
+  "Karnataka": 61095297,
+  "Kerala": 33406061,
+  "Andhra Pradesh": 49577103,
+  "Tamil Nadu": 72147030,
+  "Assam": 31205576,
+  "Jharkhand": 32988134,
+  "Uttarakhand": 10086292,
+  "Meghalaya": 2966889,
+  "Mizoram": 1097206,
+  "Nagaland": 1978502,
+  "Manipur": 2855794,
+  "Tripura": 3673917,
+  "Sikkim": 610577,
+  "Goa": 1458545,
+  "Himachal Pradesh": 6864602,
+  "Gujarat": 60439692,
+  "Rajasthan": 68548437,
+  "Uttar Pradesh": 199812341,
+  "West Bengal": 91276115,
+  "Punjab": 27743338,
+  "Haryana": 25351462,
+  "Telangana": 35003674,
+  "Jammu & Kashmir": 12267013,
+  "Ladakh": 274289,
 };
 
 export const populationData: PopulationRecord[] = Object.entries(raw).map(([region, population]) => ({
