@@ -53,3 +53,49 @@ export const stateTreeData: StateTreeData[] = [
   { state: "Jammu & Kashmir", totalAreaSqKm: 54633, forestAreaSqKm: 21347, forestPercent: 39.07, treeCount: 146.98, treeDensity: 2690, yearlyGrowth: [0.11, 0.11, 0.11, 0.11, 0.11], suggestedPlantation: 2.94 },
   { state: "Ladakh", totalAreaSqKm: 169421, forestAreaSqKm: 2285, forestPercent: 1.35, treeCount: 15.73, treeDensity: 93, yearlyGrowth: [-3.48, -3.48, -3.48, -3.48, -3.48], suggestedPlantation: 0.31 },
 ];
+];
+
+/** Aggregate stats */
+export const getAggregateStats = () => {
+  const totalTrees = stateTreeData.reduce((sum, s) => sum + s.treeCount, 0);
+  const totalArea = stateTreeData.reduce((sum, s) => sum + s.totalAreaSqKm, 0);
+  const totalForestArea = stateTreeData.reduce((sum, s) => sum + s.forestAreaSqKm, 0);
+  const avgDensity = Math.round(stateTreeData.reduce((sum, s) => sum + s.treeDensity, 0) / stateTreeData.length);
+  const totalPlantationNeeded = stateTreeData.reduce((sum, s) => sum + s.suggestedPlantation, 0);
+  const forestPercent = ((totalForestArea / totalArea) * 100).toFixed(1);
+
+  return { totalTrees, totalArea, totalForestArea, avgDensity, totalPlantationNeeded, forestPercent };
+};
+
+/** Get color based on forest percentage */
+export const getForestColor = (percent: number): string => {
+  if (percent >= 70) return '#065f46'; // very dense
+  if (percent >= 40) return '#059669'; // dense
+  if (percent >= 20) return '#34d399'; // moderate
+  if (percent >= 10) return '#fbbf24'; // low
+  return '#ef4444'; // very low - needs plantation
+};
+
+/** Top N states by density */
+export const getTopStates = (n: number) =>
+  [...stateTreeData].sort((a, b) => b.treeDensity - a.treeDensity).slice(0, n);
+
+/** Bottom N states by density */
+export const getBottomStates = (n: number) =>
+  [...stateTreeData].sort((a, b) => a.treeDensity - b.treeDensity).slice(0, n);
+
+/** Year labels for growth chart */
+export const yearLabels = ['2020', '2021', '2022', '2023', '2024'];
+
+/** Insights */
+export const getInsights = (): string[] => {
+  const sorted = [...stateTreeData].sort((a, b) => a.forestPercent - b.forestPercent);
+  const highest = [...stateTreeData].sort((a, b) => b.forestPercent - a.forestPercent)[0];
+  return [
+    `🌳 ${highest.state} has the highest forest cover at ${highest.forestPercent}%`,
+    `🏙️ ${sorted[0].state} has the lowest forest cover (${sorted[0].forestPercent}%) — urgent plantation needed`,
+    `⚠️ Delhi needs ${stateTreeData.find(s => s.state === 'Delhi')?.suggestedPlantation}M more trees to reach adequate coverage`,
+    `🌿 Northeast India (Mizoram, Meghalaya, Nagaland) has the highest tree density in the country`,
+    `📈 Rajasthan and Haryana show the fastest year-over-year afforestation growth`,
+  ];
+};
