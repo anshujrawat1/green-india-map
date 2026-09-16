@@ -87,7 +87,7 @@ export default function Plan() {
       Low: [],
       Moderate: [],
       High: [],
-      Critical': [],
+      Critical: [],
     };
     for (const r of results) {
       map[r.priority].push(r);
