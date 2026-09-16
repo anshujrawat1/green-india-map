@@ -1,7 +1,7 @@
 /**
- * Population dataset (Census 2011 projected to 2025 estimates, in absolute persons).
+ * Population dataset (Census 2011 with Telangana/Ladakh disaggregated, absolute persons).
  * Designed to be hierarchy-ready: Country > State > District > City > Ward.
- * Any level only needs { id, name, level, parentId?, population, ... } to reuse the
+ * Any level only needs { region, level, parent?, population, source, lastUpdated } to reuse the
  * plantation calculation logic in `src/lib/plantation.ts`.
  */
 
@@ -16,7 +16,7 @@ export interface PopulationRecord {
   lastUpdated: string;
 }
 
-export const POPULATION_SOURCE = 'Census of India 2011 (Telangana/Ladakh disaggregated)';
+export const POPULATION_SOURCE = 'Census of India 2011 + FSI ISFR 2023 (TOF-based)';
 export const POPULATION_UPDATED = 'Sep 2026';
 
 const raw: Record<string, number> = {
