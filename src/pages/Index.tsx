@@ -8,7 +8,8 @@ import PlantationSuggestions from '@/components/PlantationSuggestions';
 import DownloadReport from '@/components/DownloadReport';
 import StateDetail from '@/components/StateDetail';
 import PlantationModule from '@/components/plantation/PlantationModule';
-import { Trees } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trees, ClipboardList } from 'lucide-react';
 
 export default function Index() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
@@ -26,7 +27,13 @@ export default function Index() {
               <p className="text-xs text-muted-foreground">Visualizing forest density & plantation needs across India</p>
             </div>
           </div>
-          <DownloadReport />
+          <div className="flex items-center gap-3">
+            <Link to="/plan"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+              <ClipboardList className="h-4 w-4" /> Plantation Plan
+            </Link>
+            <DownloadReport />
+          </div>
         </div>
       </header>
 
