@@ -20,9 +20,11 @@ export interface RegionMetrics {
   population: number;
   totalAreaSqKm: number;
   forestAreaSqKm: number;
-  forestPercent: number;
-  /** Reported tree count in absolute trees (may be undefined) */
-  reportedTrees?: number;
+   forestPercent: number;
+   /** Suggested plantation in millions of trees (from the state dataset) */
+   suggestedPlantation: number;
+   /** Reported tree count in absolute trees (may be undefined) */
+   reportedTrees?: number;
   source: string;
   lastUpdated: string;
 }
@@ -108,6 +110,7 @@ export function getStateRegions(): RegionMetrics[] {
       totalAreaSqKm: s.totalAreaSqKm,
       forestAreaSqKm: s.forestAreaSqKm,
       forestPercent: s.forestPercent,
+      suggestedPlantation: s.suggestedPlantation,
       reportedTrees: s.treeCount * 1_000_000, // dataset stores millions
       source: pop.source,
       lastUpdated: pop.lastUpdated,
