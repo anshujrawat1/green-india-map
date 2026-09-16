@@ -53,7 +53,6 @@ export const stateTreeData: StateTreeData[] = [
   { state: "Jammu & Kashmir", totalAreaSqKm: 54633, forestAreaSqKm: 21347, forestPercent: 39.07, treeCount: 146.98, treeDensity: 2690, yearlyGrowth: [0.11, 0.11, 0.11, 0.11, 0.11], suggestedPlantation: 2.94 },
   { state: "Ladakh", totalAreaSqKm: 169421, forestAreaSqKm: 2285, forestPercent: 1.35, treeCount: 15.73, treeDensity: 93, yearlyGrowth: [-3.48, -3.48, -3.48, -3.48, -3.48], suggestedPlantation: 0.31 },
 ];
-];
 
 /** Aggregate stats */
 export const getAggregateStats = () => {
