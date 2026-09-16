@@ -8,7 +8,8 @@ import PlantationSuggestions from '@/components/PlantationSuggestions';
 import DownloadReport from '@/components/DownloadReport';
 import StateDetail from '@/components/StateDetail';
 import PlantationModule from '@/components/plantation/PlantationModule';
-import { Trees } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trees, ClipboardList } from 'lucide-react';
 
 export default function Index() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
