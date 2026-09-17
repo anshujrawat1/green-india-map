@@ -23,7 +23,7 @@ const densityColor = (d: number) =>
 export default function IndiaMap({ rows, selectedState, hoveredState, colorMode, onStateClick, onStateHover }: IndiaMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<Record<string, L.CircleMarker>>({});
+  const markersRef = useRef<Record<string, { marker: L.CircleMarker; base: number; color: string }>>({});
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -40,7 +40,7 @@ export default function IndiaMap({ rows, selectedState, hoveredState, colorMode,
     const map = mapRef.current;
     if (!map) return;
 
-    Object.values(markersRef.current).forEach(m => m.remove());
+    Object.values(markersRef.current).forEach(({ marker }) => marker.remove());
     markersRef.current = {};
 
     rows.forEach(({ data, metrics }) => {
@@ -75,19 +75,18 @@ export default function IndiaMap({ rows, selectedState, hoveredState, colorMode,
       marker.on('click', () => onStateClick(data.state));
       marker.on('mouseover', () => onStateHover(data.state));
       marker.on('mouseout', () => onStateHover(null));
-      markersRef.current[data.state] = marker;
+      markersRef.current[data.state] = { marker, base: radius, color };
     });
   }, [rows, colorMode, onStateClick, onStateHover]);
 
   // Highlight selection / hover without redrawing everything
   useEffect(() => {
-    Object.entries(markersRef.current).forEach(([state, marker]) => {
-      const base = Math.max(8, Math.min(25, marker.options.radius ?? 10));
+    Object.entries(markersRef.current).forEach(([state, { marker, base, color }]) => {
       const active = state === selectedState;
       const hover = state === hoveredState;
       marker.setStyle({
         weight: active ? 3.5 : hover ? 2.5 : 1.5,
-        color: active ? '#1e293b' : hover ? '#0f172a' : (marker.options.fillColor as string),
+        color: active ? '#1e293b' : hover ? '#0f172a' : color,
         fillOpacity: active || hover ? 0.95 : 0.6,
       });
       marker.setRadius(active ? base + 6 : hover ? base + 3 : base);
