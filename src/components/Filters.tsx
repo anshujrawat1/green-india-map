@@ -47,7 +47,7 @@ const densityLegend = [
   { color: '#ef4444', label: 'Very Low (<2k)' },
 ];
 
-export default function Filters({ selectedState, onStateChange, filters, onChange, matchCount }: FiltersProps) {
+export default function Filters({ selectedState, onStateChange, filters = defaultFilters, onChange, matchCount }: FiltersProps) {
   const states = [...stateTreeData].sort((a, b) => a.state.localeCompare(b.state));
   const set = <K extends keyof FilterState>(key: K, value: FilterState[K]) => onChange({ ...filters, [key]: value });
 
