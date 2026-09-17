@@ -1,19 +1,52 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import StatsCards from '@/components/StatsCards';
 import IndiaMap from '@/components/IndiaMap';
-import Filters from '@/components/Filters';
+import Filters, { defaultFilters, FilterState } from '@/components/Filters';
+import StateList, { StateRow } from '@/components/StateList';
 import { TopStatesChart, BottomStatesChart, ForestPieChart, GrowthLineChart } from '@/components/Charts';
 import InsightsPanel from '@/components/InsightsPanel';
 import PlantationSuggestions from '@/components/PlantationSuggestions';
 import DownloadReport from '@/components/DownloadReport';
 import StateDetail from '@/components/StateDetail';
 import PlantationModule from '@/components/plantation/PlantationModule';
+import { stateTreeData } from '@/data/treeData';
+import { computeAll } from '@/lib/plantation';
 import { Link } from 'react-router-dom';
 import { Trees, ClipboardList } from 'lucide-react';
 
 export default function Index() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [densityRange, setDensityRange] = useState<[number, number]>([0, 45000]);
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+
+  const metricsByState = useMemo(() => {
+    const map: Record<string, ReturnType<typeof computeAll>[number]> = {};
+    computeAll().forEach(m => { map[m.region] = m; });
+    return map;
+  }, []);
+
+  const rows: StateRow[] = useMemo(() => {
+    const list = stateTreeData
+      .map(data => ({ data, metrics: metricsByState[data.state] }))
+      .filter(({ data, metrics }) =>
+        data.treeDensity >= filters.densityRange[0] &&
+        data.treeDensity <= filters.densityRange[1] &&
+        data.forestPercent >= filters.forestRange[0] &&
+        data.forestPercent <= filters.forestRange[1] &&
+        (filters.priorities.length === 0 || (metrics && filters.priorities.includes(metrics.priority)))
+      );
+    const sorters: Record<FilterState['sortKey'], (a: StateRow, b: StateRow) => number> = {
+      name: (a, b) => a.data.state.localeCompare(b.data.state),
+      forest: (a, b) => b.data.forestPercent - a.data.forestPercent,
+      density: (a, b) => b.data.treeDensity - a.data.treeDensity,
+      trees: (a, b) => b.data.treeCount - a.data.treeCount,
+      deficit: (a, b) => (b.metrics?.treeDeficit ?? 0) - (a.metrics?.treeDeficit ?? 0),
+    };
+    return list.sort(sorters[filters.sortKey]);
+  }, [filters, metricsByState]);
+
+  const handleSelect = useCallback((state: string | null) => setSelectedState(state), []);
+  const handleHover = useCallback((state: string | null) => setHoveredState(state), []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,15 +77,30 @@ export default function Index() {
         {/* Map + Filters row */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-4">
-            <IndiaMap selectedState={selectedState} onStateClick={setSelectedState} densityRange={densityRange} />
+            <IndiaMap
+              rows={rows}
+              selectedState={selectedState}
+              hoveredState={hoveredState}
+              colorMode={filters.colorMode}
+              onStateClick={handleSelect}
+              onStateHover={handleHover}
+            />
             {selectedState && <StateDetail state={selectedState} onClose={() => setSelectedState(null)} />}
+            <StateList
+              rows={rows}
+              selectedState={selectedState}
+              hoveredState={hoveredState}
+              onSelect={handleSelect}
+              onHover={handleHover}
+            />
           </div>
           <div className="space-y-4">
             <Filters
               selectedState={selectedState}
               onStateChange={setSelectedState}
-              densityRange={densityRange}
-              onDensityChange={setDensityRange}
+              filters={filters}
+              onChange={setFilters}
+              matchCount={rows.length}
             />
             <InsightsPanel />
           </div>
