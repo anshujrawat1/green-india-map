@@ -24,14 +24,37 @@ export default function Tracker() {
     [all],
   );
 
-  const [started, setStarted] = useState<Record<string, boolean>>(loadStarted);
+  const [started, setStarted] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
 
-  const toggle = (region: string) => {
-    setStarted(prev => {
-      const next = { ...prev, [region]: !prev[region] };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase.from('tracker_progress').select('region, started');
+      if (!active) return;
+      if (error) {
+        toast.error('Could not load saved progress');
+      } else {
+        const map: Record<string, boolean> = {};
+        (data ?? []).forEach(row => { map[row.region] = !!row.started; });
+        setStarted(map);
+      }
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const toggle = async (region: string) => {
+    const next = !started[region];
+    const prev = started;
+    setStarted({ ...started, [region]: next });
+    const { error } = await supabase
+      .from('tracker_progress')
+      .upsert({ region, started: next, updated_at: new Date().toISOString() }, { onConflict: 'region' });
+    if (error) {
+      setStarted(prev);
+      toast.error('Could not save progress');
+    }
   };
 
   const startedCount = tracked.filter(r => started[r.region]).length;
