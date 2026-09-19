@@ -14,7 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tracker_progress: {
+        Row: {
+          region: string
+          started: boolean
+          updated_at: string
+        }
+        Insert: {
+          region: string
+          started?: boolean
+          updated_at?: string
+        }
+        Update: {
+          region?: string
+          started?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
