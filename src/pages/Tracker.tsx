@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trees, ArrowLeft, CheckCircle2, Circle, Sprout, Target, TrendingDown } from 'lucide-react';
@@ -8,18 +8,11 @@ import {
 import {
   computeAll, PlantationResult, PRIORITY_META, PRIORITY_ORDER, fmt, fmtFull, yearsToClose,
 } from '@/lib/plantation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-const STORAGE_KEY = 'tree-tracker-started';
 const TRACKED_PRIORITIES = ['Critical', 'High'] as const;
 const HORIZON_YEARS = 10;
-
-const loadStarted = (): Record<string, boolean> => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, boolean>;
-  } catch {
-    return {};
-  }
-};
 
 export default function Tracker() {
   const all = useMemo(() => computeAll(), []);
