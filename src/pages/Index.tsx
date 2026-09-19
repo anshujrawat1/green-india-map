@@ -12,7 +12,7 @@ import PlantationModule from '@/components/plantation/PlantationModule';
 import { stateTreeData } from '@/data/treeData';
 import { computeAll } from '@/lib/plantation';
 import { Link } from 'react-router-dom';
-import { Trees, ClipboardList } from 'lucide-react';
+import { Trees, ClipboardList, Sprout } from 'lucide-react';
 
 export default function Index() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
