@@ -98,7 +98,9 @@ export default function Tracker() {
             <Trees className="h-7 w-7 text-primary" />
             <div>
               <h1 className="text-xl font-display font-bold text-foreground">Plantation Progress Tracker</h1>
-              <p className="text-xs text-muted-foreground">Critical & High-priority states · {startedCount} of {tracked.length} started</p>
+              <p className="text-xs text-muted-foreground">
+                Critical & High-priority states · {loading ? 'loading saved progress…' : `${startedCount} of ${tracked.length} started`}
+              </p>
             </div>
           </div>
           <Link to="/"
@@ -213,7 +215,7 @@ export default function Tracker() {
         })}
 
         <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-          Progress selections are saved in your browser · Timeline assumes suggested plantation is achieved every year once started
+          Progress is saved to the shared database and restored on every visit · Timeline assumes suggested plantation is achieved every year once started
         </footer>
       </main>
     </div>
