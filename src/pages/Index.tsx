@@ -61,6 +61,10 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link to="/tracker"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted/60 transition-colors">
+              <Sprout className="h-4 w-4" /> Progress Tracker
+            </Link>
             <Link to="/plan"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
               <ClipboardList className="h-4 w-4" /> Plantation Plan
