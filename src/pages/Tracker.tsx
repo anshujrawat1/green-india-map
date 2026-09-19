@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trees, ArrowLeft, CheckCircle2, Circle, Sprout, Target, TrendingDown } from 'lucide-react';
@@ -8,18 +8,11 @@ import {
 import {
   computeAll, PlantationResult, PRIORITY_META, PRIORITY_ORDER, fmt, fmtFull, yearsToClose,
 } from '@/lib/plantation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-const STORAGE_KEY = 'tree-tracker-started';
 const TRACKED_PRIORITIES = ['Critical', 'High'] as const;
 const HORIZON_YEARS = 10;
-
-const loadStarted = (): Record<string, boolean> => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, boolean>;
-  } catch {
-    return {};
-  }
-};
 
 export default function Tracker() {
   const all = useMemo(() => computeAll(), []);
@@ -31,14 +24,37 @@ export default function Tracker() {
     [all],
   );
 
-  const [started, setStarted] = useState<Record<string, boolean>>(loadStarted);
+  const [started, setStarted] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
 
-  const toggle = (region: string) => {
-    setStarted(prev => {
-      const next = { ...prev, [region]: !prev[region] };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase.from('tracker_progress').select('region, started');
+      if (!active) return;
+      if (error) {
+        toast.error('Could not load saved progress');
+      } else {
+        const map: Record<string, boolean> = {};
+        (data ?? []).forEach(row => { map[row.region] = !!row.started; });
+        setStarted(map);
+      }
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const toggle = async (region: string) => {
+    const next = !started[region];
+    const prev = started;
+    setStarted({ ...started, [region]: next });
+    const { error } = await supabase
+      .from('tracker_progress')
+      .upsert({ region, started: next, updated_at: new Date().toISOString() }, { onConflict: 'region' });
+    if (error) {
+      setStarted(prev);
+      toast.error('Could not save progress');
+    }
   };
 
   const startedCount = tracked.filter(r => started[r.region]).length;
@@ -82,7 +98,9 @@ export default function Tracker() {
             <Trees className="h-7 w-7 text-primary" />
             <div>
               <h1 className="text-xl font-display font-bold text-foreground">Plantation Progress Tracker</h1>
-              <p className="text-xs text-muted-foreground">Critical & High-priority states · {startedCount} of {tracked.length} started</p>
+              <p className="text-xs text-muted-foreground">
+                Critical & High-priority states · {loading ? 'loading saved progress…' : `${startedCount} of ${tracked.length} started`}
+              </p>
             </div>
           </div>
           <Link to="/"
@@ -197,7 +215,7 @@ export default function Tracker() {
         })}
 
         <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-          Progress selections are saved in your browser · Timeline assumes suggested plantation is achieved every year once started
+          Progress is saved to the shared database and restored on every visit · Timeline assumes suggested plantation is achieved every year once started
         </footer>
       </main>
     </div>
